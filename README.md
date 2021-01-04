@@ -25,6 +25,7 @@
 _I prepare my installation by placing the splunk TGZ along with the prerequisite SPL files into my installation directory and executing all of these commands from that location._
 
 1. Install & start Splunk
+
    2. wget -O splunk-8.1.1-08187535c166-Linux-x86_64.tgz 'https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=8.1.1&product=splunk&filename=splunk-8.1.1-08187535c166-Linux-x86_64.tgz&wget=true'   
    2. tar xvf splunk-8.1.1-08187535c166-Linux-x86_64.tgz
    2. ./splunk/bin/splunk start --accept-license (create admin credentials here)
