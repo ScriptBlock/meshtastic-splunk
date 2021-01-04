@@ -1,0 +1,231 @@
+<form theme="dark">
+  <label>Message Tracking</label>
+  <fieldset submitButton="true" autoRun="false">
+    <input type="time" token="search_time" searchWhenChanged="true">
+      <label>Time</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="multiselect" token="message_from">
+      <label>Message From</label>
+      <choice value="*">Any</choice>
+      <default>*</default>
+      <prefix>(</prefix>
+      <suffix>)</suffix>
+      <initialValue>*</initialValue>
+      <valuePrefix>fromId="</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter> OR </delimiter>
+      <fieldForLabel>fromId</fieldForLabel>
+      <fieldForValue>fromId</fieldForValue>
+      <search>
+        <query>index=meshtastic  sourcetype="meshtastic:ip:messages" | stats count by fromId</query>
+        <earliest>$search_time.earliest$</earliest>
+        <latest>$search_time.latest$</latest>
+      </search>
+    </input>
+    <input type="multiselect" token="message_to">
+      <label>Message To</label>
+      <choice value="*">Any</choice>
+      <prefix>(</prefix>
+      <suffix>)</suffix>
+      <valuePrefix>toId="</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter> OR </delimiter>
+      <fieldForLabel>toId</fieldForLabel>
+      <fieldForValue>toId</fieldForValue>
+      <search>
+        <query>index=* sourcetype="meshtastic:ip:*" sourcetype="meshtastic:ip:messages" | stats count by toId</query>
+        <earliest>$search_time.earliest$</earliest>
+        <latest>$search_time.latest$</latest>
+      </search>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Message Type</title>
+      <chart>
+        <search>
+          <query>index=* sourcetype="meshtastic:ip:*" sourcetype="meshtastic:ip:messages" $message_from$ $message_to$ | timechart count by decoded.data.portnum</query>
+          <earliest>$search_time.earliest$</earliest>
+          <latest>$search_time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Messages By IP</title>
+      <chart>
+        <search>
+          <query>index=meshtastic sourcetype="meshtastic:ip:messages" $message_from$ $message_to$| rex field=source "messages-(?&lt;ip&gt;\d+\.\d+\.\d+\.\d+)\.log" | timechart count by ip</query>
+          <earliest>$search_time.earliest$</earliest>
+          <latest>$search_time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Message List</title>
+      <input type="dropdown" token="portnum_filter" searchWhenChanged="true">
+        <label>Portnum</label>
+        <choice value="*">All</choice>
+        <fieldForLabel>portnum</fieldForLabel>
+        <fieldForValue>portnum</fieldForValue>
+        <search>
+          <query>index=meshtastic sourcetype="meshtastic:ip:messages" $message_from$ $message_to$| rename decoded.data.portnum as portnum | stats count by portnum</query>
+          <earliest>$search_time.earliest$</earliest>
+          <latest>$search_time.latest$</latest>
+        </search>
+      </input>
+      <input type="text" token="wildcard" searchWhenChanged="true">
+        <label>Message Search</label>
+        <default>*</default>
+        <initialValue>*</initialValue>
+      </input>
+      <table>
+        <search>
+          <query>index=meshtastic sourcetype="meshtastic:ip:messages" (fromId="*") (toId="*") decoded.data.portnum="$portnum_filter$" "*$wildcard$*"| rex field="source" "-(?&lt;ip&gt;\d+\.\d+\.\d+\.\d+)\."  | table _time, id, ip, from, fromId, to, toId, rxSnr, rxTime, hopLimit, decoded.data.portnum, decoded.data.payload | sort - fromId, toId, _time</query>
+          <earliest>$search_time.earliest$</earliest>
+          <latest>$search_time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NODEINFO Messages Seen</title>
+      <table>
+        <search>
+          <query>index=meshtastic sourcetype="meshtastic:ip:messages" decoded.data.portnum="NODEINFO_APP" | rex field=source "messages-(?&lt;ip&gt;\d+\.\d+\.\d+\.\d+)\.log"| stats values(decoded.data.user.*) as *, sparkline as heartbeat by ip</query>
+          <earliest>$search_time.earliest$</earliest>
+          <latest>$search_time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>POSITION_APP Messages Seen</title>
+      <map>
+        <search>
+          <query>index=meshtastic sourcetype="meshtastic:ip:messages" decoded.data.portnum="POSITION_APP" | rex field=source "messages-(?&lt;ip&gt;\d+\.\d+\.\d+\.\d+)\.log" | geostats latfield="decoded.data.position.latitude" longfield="decoded.data.position.longitude" count by ip</query>
+          <earliest>$search_time.earliest$</earliest>
+          <latest>$search_time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="mapping.choroplethLayer.colorBins">5</option>
+        <option name="mapping.choroplethLayer.colorMode">auto</option>
+        <option name="mapping.choroplethLayer.maximumColor">0xaf575a</option>
+        <option name="mapping.choroplethLayer.minimumColor">0x62b3b2</option>
+        <option name="mapping.choroplethLayer.neutralPoint">0</option>
+        <option name="mapping.choroplethLayer.shapeOpacity">0.75</option>
+        <option name="mapping.choroplethLayer.showBorder">1</option>
+        <option name="mapping.data.maxClusters">100</option>
+        <option name="mapping.legend.placement">bottomright</option>
+        <option name="mapping.map.center">(0,0)</option>
+        <option name="mapping.map.panning">1</option>
+        <option name="mapping.map.scrollZoom">0</option>
+        <option name="mapping.map.zoom">2</option>
+        <option name="mapping.markerLayer.markerMaxSize">50</option>
+        <option name="mapping.markerLayer.markerMinSize">10</option>
+        <option name="mapping.markerLayer.markerOpacity">0.8</option>
+        <option name="mapping.showTiles">1</option>
+        <option name="mapping.tileLayer.maxZoom">7</option>
+        <option name="mapping.tileLayer.minZoom">0</option>
+        <option name="mapping.tileLayer.tileOpacity">1</option>
+        <option name="mapping.type">marker</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </map>
+    </panel>
+  </row>
+</form>

@@ -1,0 +1,7 @@
+<nav search_view="search">
+  <view name="global_overview" default="true" />
+  <view name="device_information" />
+  <view name="message_tracking" />  
+  <view name="dashboards" />
+  <view name="search" />  
+</nav>

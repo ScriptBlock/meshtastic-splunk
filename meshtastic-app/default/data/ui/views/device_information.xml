@@ -1,0 +1,259 @@
+<form theme="dark">
+  <label>Device Information</label>
+  <fieldset submitButton="true" autoRun="false">
+    <input type="dropdown" token="device_number" searchWhenChanged="true">
+      <label>Device Number</label>
+      <fieldForLabel>nodeid</fieldForLabel>
+      <fieldForValue>nodeid</fieldForValue>
+      <search>
+        <query>index=* sourcetype="meshtastic:*" sourcetype="meshtastic:ip:nodeinfo" | stats count by device_info.my_node_num | rename device_info.my_node_num as nodeid | table nodeid</query>
+        <earliest>-30d@d</earliest>
+        <latest>now</latest>
+      </search>
+    </input>
+    <input type="time" token="shared_time">
+      <label>Time</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Device Details</title>
+      <table>
+        <search>
+          <query>index=* sourcetype="meshtastic:ip:*" sourcetype="meshtastic:ip:nodeinfo" device_info.my_node_num="$device_number$" | table device_info.* | eval a="Test" | untable a, Field, value | stats values(value) as Values by Field | where Field != "device_info.current_packet_id"</query>
+          <earliest>$shared_time.earliest$</earliest>
+          <latest>$shared_time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Device User and Radio Information</title>
+      <table>
+        <search>
+          <query>index=* sourcetype="meshtastic:ip:*" sourcetype="meshtastic:ip:meshdata"  [ search index=meshtastic sourcetype="meshtastic:ip:*" sourcetype="meshtastic:ip:nodeinfo" "device_info.my_node_num"="$device_number$" 
+    | stats count by ip 
+    | table ip] 
+| foreach meshnodes.*.num 
+    [ eval id=mvappend(id,if('&lt;&lt;FIELD&gt;&gt;'=="$device_number$","&lt;&lt;MATCHSTR&gt;&gt;",null))] 
+| spath input=_raw path=meshnodes output=mn 
+| eval selectedNodeDetails = json_extract(mn, id) 
+| spath input=selectedNodeDetails 
+| table user.*, ip
+| untable a, Field, value | stats values(value) as Value by Field</query>
+          <earliest>$shared_time.earliest$</earliest>
+          <latest>$shared_time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+      <table>
+        <search>
+          <query>index=* sourcetype="meshtastic:ip:*" sourcetype="meshtastic:ip:nodeinfo" device_info.my_node_num="$device_number$"| table radio_info.channel_settings.* | eval a="Test" | untable a, Field, value | stats values(value) as Values by Field</query>
+          <earliest>$shared_time.earliest$</earliest>
+          <latest>$shared_time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Device Radio Preferences</title>
+      <table>
+        <search>
+          <query>index=* sourcetype="meshtastic:ip:*" sourcetype="meshtastic:ip:nodeinfo" device_info.my_node_num="$device_number$" | table radio_info.preferences.* | eval a="Test" | untable a, Field, value | stats values(value) as Values by Field</query>
+          <earliest>$shared_time.earliest$</earliest>
+          <latest>$shared_time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Data Quality</title>
+      <chart>
+        <search>
+          <query>index=meshtastic sourcetype="meshtastic:ip:*"
+    [ search index=meshtastic sourcetype="meshtastic:ip:*" sourcetype="meshtastic:ip:nodeinfo" "device_info.my_node_num"="$device_number$" 
+    | stats count by ip 
+    | table ip] | timechart count by sourcetype</query>
+          <earliest>$shared_time.earliest$</earliest>
+          <latest>$shared_time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.visibility">collapsed</option>
+        <option name="charting.axisTitleY2.visibility">collapsed</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">1</option>
+        <option name="trellis.scales.shared">0</option>
+        <option name="trellis.size">small</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Mesh Nodes Seen for Device</title>
+      <table>
+        <search>
+          <query>index=meshtastic sourcetype="meshtastic:ip:*" sourcetype="meshtastic:ip:meshdata"     [ search index=meshtastic sourcetype="meshtastic:ip:*" sourcetype="meshtastic:ip:nodeinfo" "device_info.my_node_num"="$device_number$" 
+    | stats count by ip 
+    | table ip] 
+| table ip, meshnodes.* 
+| untable ip, Field, Value 
+| rex field=Field "meshnodes\.(?&lt;deviceId&gt;[^\.]+)\.(?&lt;attribute&gt;.*)" 
+| where (attribute == "num" OR attribute=="user.id" OR attribute=="user.longName" OR attribute=="user.id" OR attribute=="user.shortName" OR attribute=="user.macaddr") 
+| chart values(Value) as D by deviceId, attribute 
+| foreach D:* [ eval &lt;&lt;MATCHSTR&gt;&gt;='&lt;&lt;FIELD&gt;&gt;' ]
+| fields - *:*</query>
+          <earliest>$shared_time.earliest$</earliest>
+          <latest>$shared_time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Mesh Geography</title>
+      <viz type="location_tracker_app.location_tracker">
+        <search>
+          <query>index=meshtastic sourcetype="meshtastic:ip:*" sourcetype="meshtastic:ip:meshdata"
+    [ search index=meshtastic sourcetype="meshtastic:ip:*" sourcetype="meshtastic:ip:nodeinfo" "device_info.my_node_num"="$device_number$" 
+    | stats count by ip 
+    | table ip] 
+| table _time, meshnodes.* 
+| untable _time, Field, Value 
+| rex field=Field "meshnodes\.(?&lt;deviceId&gt;[^\.]+)\.(?&lt;attribute&gt;.*)"  | eval {attribute}=Value | fields - Field, Value, attribute | stats values(*) as * by  _time, deviceId | search position.latitude=* | table _time position.latitude position.longitude user.longName</query>
+          <earliest>$shared_time.earliest$</earliest>
+          <latest>$shared_time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">302</option>
+        <option name="location_tracker_app.location_tracker.interval">10</option>
+        <option name="location_tracker_app.location_tracker.showTraces">0</option>
+        <option name="location_tracker_app.location_tracker.tileSet">openstreetmap_tiles</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Mesh Signal To Noise Averages</title>
+      <chart>
+        <search>
+          <query>index=meshtastic sourcetype="meshtastic:ip:*" sourcetype="meshtastic:ip:meshdata" 
+    [ search index=meshtastic sourcetype="meshtastic:ip:*" sourcetype="meshtastic:ip:nodeinfo" "device_info.my_node_num"="$device_number$" 
+    | stats count by ip 
+    | table ip] 
+| table _time, meshnodes.* 
+| untable _time, Field, Value 
+| rex field=Field "meshnodes\.(?&lt;deviceId&gt;[^\.]+)\.(?&lt;attribute&gt;.*)"  | eval {attribute}=Value | fields - Field, Value, attribute | stats values(*) as * by  _time, deviceId | timechart avg(snr) by deviceId</query>
+          <earliest>$shared_time.earliest$</earliest>
+          <latest>$shared_time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+</form>

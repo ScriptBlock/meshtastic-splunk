@@ -1,0 +1,46 @@
+[app/ui]
+version = 8.0.1
+modtime = 1609562825.348869000
+
+[app/launcher]
+version = 8.0.1
+modtime = 1609562825.350575000
+
+[views/meshtastic_device_information]
+owner = admin
+version = 8.0.1
+modtime = 1609683429.955073000
+
+[views/message_tracking]
+access = read : [ * ], write : [ admin, power ]
+export = none
+owner = admin
+version = 8.0.1
+modtime = 1609684523.780364000
+
+[views/global_overview]
+owner = admin
+version = 8.0.1
+modtime = 1609701558.412229000
+
+[nav/default]
+version = 8.0.1
+modtime = 1609683738.835890000
+
+[props/meshtastic%3Aip%3Ameshdata/REPORT-meshdata%3Anodes]
+access = read : [ * ], write : [ admin, power ]
+export = none
+owner = admin
+version = 8.0.1
+modtime = 1609684969.922865000
+
+[transforms/meshdata%3Anodes]
+access = read : [ * ], write : [ admin, power ]
+export = none
+owner = admin
+version = 8.0.1
+modtime = 1609684987.487714000
+
+[views/device_information]
+version = 8.0.1
+modtime = 1609701860.363257000
